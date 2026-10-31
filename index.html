@@ -1,0 +1,220 @@
+{% extends "showroom/base.html" %}
+{% load humanize %}
+{% block title %}Karvak — avtomobillar va tuning narxlari Telegram botda{% endblock %}
+{% block content %}
+
+<section class="hero">
+    <div class="hero-copy">
+        <h1>Avtomobillar va<br>tuning narxlari<br><span>Telegram botda.</span></h1>
+        <p>Saytda tanlang — botda narxni ko'ring va ism-telefon bilan ariza yuboring. Katalogda {{ total_cars }} ta avtomobil, har birida bajarilgan tuning ishlari ro'yxati.</p>
+        <div class="hero-actions">
+            {% if telegram_bot_url %}
+                <a class="button button-primary" href="{{ telegram_bot_url }}" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-telegram" aria-hidden="true"></i> Telegram botga o'tish
+                </a>
+            {% endif %}
+            <a class="text-link" href="{% url 'cars' %}">Avtomobillarni ko'rish <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+        <p class="hero-meta">Hazorasp tumani, Karvak qishlog'i<br>Har kuni 09:00–20:00</p>
+    </div>
+
+    <div class="hero-inventory">
+        {% if lead %}
+        <a class="lead-car" href="{% url 'car_detail' lead.id %}">
+            <span class="lead-car-media">
+                <img src="{{ lead.image }}" alt="{{ lead.name }}" width="1200" height="750" decoding="async" fetchpriority="high">
+                <span class="lead-car-chip"><i class="fa-solid fa-circle" aria-hidden="true"></i>{{ lead.category_label }}</span>
+            </span>
+            <span class="lead-car-body">
+                <span class="lead-car-name">{{ lead.name }}</span>
+                <span class="lead-car-spec">{{ lead.engine }} · {{ lead.year }}</span>
+                <span class="lead-car-price">${{ lead.price|intcomma }}</span>
+                <span class="lead-car-more">Batafsil <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </span>
+        </a>
+        {% endif %}
+
+        <div class="hero-register">
+            {% for car in hero_others %}
+            <a class="register-row" href="{% url 'car_detail' car.id %}">
+                <img src="{{ car.image }}" alt="{{ car.name }}" width="160" height="100" loading="lazy" decoding="async">
+                <span class="register-main">
+                    <span class="register-name">{{ car.name }}</span>
+                    <span class="register-sub">{{ car.engine }}</span>
+                </span>
+                <span class="register-price">${{ car.price|intcomma }}</span>
+                <i class="fa-solid fa-arrow-right register-arrow" aria-hidden="true"></i>
+            </a>
+            {% endfor %}
+        </div>
+
+        <p class="hero-note">Narxlar AQSh dollarida. Yakuniy summa hujjatlar rasmiylashtirilganda tasdiqlanadi. <a href="{% url 'cars' %}">{{ total_cars }} ta avtomobil <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></p>
+    </div>
+</section>
+
+<section class="section catalog-preview">
+    <div class="section-head">
+        <h2>Sotuvdagi avtomobillar</h2>
+        <div class="chips" aria-label="Kategoriyalar">
+            <a class="chip selected" href="{% url 'cars' %}">Barchasi</a>
+            <a class="chip" href="{% url 'cars' %}?toifa=local">Mahalliy</a>
+            <a class="chip" href="{% url 'cars' %}?toifa=electric">Elektro</a>
+            <a class="chip" href="{% url 'cars' %}?toifa=sport">Sport</a>
+            <a class="chip" href="{% url 'cars' %}?toifa=suv">SUV</a>
+        </div>
+    </div>
+
+    <div class="catalog-layout">
+        <div class="register-table" role="table" aria-label="Avtomobillar narxlari">
+            <div class="register-head" role="row">
+                <span role="columnheader">Avtomobil</span>
+                <span role="columnheader">Dvigatel</span>
+                <span role="columnheader">Narx</span>
+            </div>
+            {% for car in cars %}
+            <a class="register-line" role="row" href="{% url 'car_detail' car.id %}">
+                <span class="line-car" role="cell">
+                    <img src="{{ car.image }}" alt="{{ car.name }}" width="96" height="60" loading="lazy" decoding="async">
+                    <span>
+                        <span class="line-name">{{ car.name }}</span>
+                        <span class="line-sub">{{ car.tuning|truncatechars:46 }}</span>
+                    </span>
+                </span>
+                <span class="line-engine" role="cell">{{ car.engine }}</span>
+                <span class="line-price" role="cell">${{ car.price|intcomma }} <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></span>
+            </a>
+            {% endfor %}
+            <p class="register-foot">{{ cars|length }} model ko'rsatilgan. Qolgan {{ remaining_cars }} model va kategoriya filtrlari — katalogda, xuddi shu narxlar bilan.</p>
+        </div>
+
+        {% if highlight %}
+        <aside class="highlight-card">
+            <img src="{{ highlight.image }}" alt="{{ highlight.name }}" width="800" height="600" loading="lazy" decoding="async">
+            <div class="highlight-body">
+                <span class="highlight-kind"><i class="fa-solid fa-circle" aria-hidden="true"></i>{{ highlight.category_label }} avtomobil</span>
+                <h3>{{ highlight.name }}</h3>
+                <p>{{ highlight.tuning }}</p>
+                <div class="highlight-bottom">
+                    <span class="highlight-price">${{ highlight.price|intcomma }}</span>
+                    {% if telegram_bot_url %}
+                        <a class="button button-outline button-small" href="{{ telegram_bot_url }}?start=car_{{ highlight.id }}" target="_blank" rel="noopener noreferrer">Botda so'rash</a>
+                    {% endif %}
+                </div>
+            </div>
+        </aside>
+        {% endif %}
+    </div>
+</section>
+
+<section class="section service-preview">
+    <div class="section-head">
+        <h2>Xizmatlar va narxlar</h2>
+        <a class="text-link" href="{% url 'services' %}">To'liq ro'yxat <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+    </div>
+    <p class="section-note">Aniq summa avtomobil va ish hajmiga qarab belgilanadi. Botda har bir xizmat narxi alohida ko'rinadi.</p>
+    <div class="service-register">
+        {% for service in services %}
+        <a class="service-line" href="{% url 'services' %}#{{ service.title|slugify }}">
+            <span class="service-name">{{ service.title }}</span>
+            <span class="service-price">{{ service.price }}</span>
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+        </a>
+        {% empty %}
+        <p class="empty-line">Hozircha faol xizmatlar mavjud emas.</p>
+        {% endfor %}
+    </div>
+</section>
+
+{% if project %}
+<section class="project-band">
+    <div class="project-media">
+        <img class="project-main" src="{{ project.image }}" alt="{{ project.car }} — Karvak loyihasi" width="1400" height="900" loading="lazy" decoding="async">
+        <div class="project-details">
+            {% for image in project.details %}
+                <img src="{{ image }}" alt="Ish jarayoni — {{ project.car }}" width="700" height="520" loading="lazy" decoding="async">
+            {% endfor %}
+        </div>
+    </div>
+    <div class="project-copy">
+        <h2>Loyiha: {{ project.car }}</h2>
+        <p>{{ project.summary }}</p>
+        <dl class="project-work">
+            {% for item in project.work %}
+                <div><dt>{{ item.label }}</dt><dd>{{ item.value }}</dd></div>
+            {% endfor %}
+        </dl>
+        <a class="text-link" href="{% url 'about' %}">Boshqa loyihalarni ko'rish <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+        <p class="media-credit">{{ project.credit }}</p>
+    </div>
+</section>
+{% endif %}
+
+<section class="bot-band">
+    <div class="bot-copy">
+        <h2>Bir xil katalog, bir xil narx — Telegramda ham.</h2>
+        <p>Saytdagi modelni botda qaytadan qidirish shart emas. Kategoriya, narx va tuning ishlari bitta ma'lumotdan olinadi.</p>
+        <dl class="bot-facts">
+            <div><dt>Katalog</dt><dd>{{ total_cars }} model, kategoriya bo'yicha</dd></div>
+            <div><dt>Narxlar</dt><dd>avtomobil va xizmat narxi bir joyda</dd></div>
+            <div><dt>Ariza</dt><dd>ism va telefon → adminga darhol xabar</dd></div>
+        </dl>
+        <div class="bot-actions">
+            {% if telegram_bot_url %}
+                <a class="button button-primary" href="{{ telegram_bot_url }}" target="_blank" rel="noopener noreferrer">
+                    <i class="fa-brands fa-telegram" aria-hidden="true"></i> Telegram botga o'tish
+                </a>
+            {% endif %}
+            <a class="text-link" href="{% url 'telegram_bot' %}">Bot qanday ishlaydi <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>
+        </div>
+    </div>
+
+    <div class="bot-preview" aria-label="Telegram botdagi ko'rinish">
+        <div class="bot-preview-head">
+            <span class="bot-avatar"><i class="fa-brands fa-telegram" aria-hidden="true"></i></span>
+            <span>
+                <span class="bot-name">Karvak Auto</span>
+                <span class="bot-handle">{% if telegram_bot_url %}@{{ telegram_bot_url|cut:"https://t.me/" }}{% else %}bot{% endif %}</span>
+            </span>
+        </div>
+        <div class="bot-preview-body">
+            <p class="bot-line">Kategoriyani tanlang:</p>
+            <div class="bot-chips"><span>Mahalliy</span><span>Elektro</span><span>Sport</span></div>
+            <p class="bot-bubble">Mahalliy</p>
+            {% if lead %}
+            <div class="bot-car">
+                <img src="{{ lead.image }}" alt="{{ lead.name }}" width="600" height="360" loading="lazy" decoding="async">
+                <div class="bot-car-text">
+                    <strong>{{ lead.name }}</strong>
+                    <span>{{ lead.engine }} · Stage 1+</span>
+                    <b>${{ lead.price|intcomma }}</b>
+                    <div class="bot-car-actions"><span>Batafsil</span><span>Ariza qoldirish</span></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        <p class="bot-preview-note">Botdagi ko'rinish. Narx va tavsif sayt bilan bir xil fayldan olinadi.</p>
+    </div>
+</section>
+
+<section class="contact-band">
+    <h2>Manzil va aloqa</h2>
+    <div class="contact-grid">
+        <div>
+            <span class="contact-label">Telefon</span>
+            <a class="contact-value" href="tel:+998932808050">+998 93 280 80 50</a>
+            <p class="contact-sub">Qo'ng'iroq yoki Telegram — ikkalasi ham ishlaydi.</p>
+        </div>
+        <div>
+            <span class="contact-label">Manzil</span>
+            <p class="contact-value contact-value-plain">Xorazm viloyati, Hazorasp tumani,<br>Karvak qishlog'i, Navbahor ko'chasi</p>
+        </div>
+        <div>
+            <span class="contact-label">Ish vaqti</span>
+            <p class="contact-value contact-value-plain">Har kuni, 09:00–20:00</p>
+            <p class="contact-sub">Tuning ishlari navbat bilan qabul qilinadi.</p>
+        </div>
+    </div>
+    <p class="contact-fallback">Telegram ochilmasa — <a href="tel:+998932808050">+998 93 280 80 50</a> raqamiga qo'ng'iroq qiling.</p>
+</section>
+
+{% endblock %}
